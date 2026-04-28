@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MBTI — 16种人格</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800;900&family=Noto+Sans+SC:wght@300;400;700;900&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0a0a0f;--text:#f0ece4;--accent:#f5c542;--accent2:#ff6b6b;--accent3:#a78bfa;
+  --muted:#6b6b7b;--card:rgba(255,255,255,0.03);--border:rgba(255,255,255,0.06);
+}
+html{scroll-behavior:smooth}
+body{font-family:'Noto Sans SC','Inter',sans-serif;background:var(--bg);color:var(--text);cursor:none;overflow-x:hidden}
+a{color:var(--accent);text-decoration:none}
+
+/* CURSOR */
+.cursor-ring{position:fixed;top:0;left:0;width:28px;height:28px;border-radius:50%;pointer-events:none;z-index:99999;mix-blend-mode:difference;background:var(--text);transform:translate(-50%,-50%);transition:width .3s cubic-bezier(.22,1,.36,1),height .3s cubic-bezier(.22,1,.36,1)}
+.cursor-ring.hero-mode{width:100px;height:100px}
+
+/* HERO */
+.hero{position:relative;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;max-width:100%;padding:0}
+.hero-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:0}
+.hero-content{position:relative;z-index:2;text-align:center;pointer-events:none}
+.hero-badge{display:inline-block;padding:6px 18px;border:1px solid rgba(245,197,66,.4);border-radius:999px;font-size:13px;letter-spacing:.15em;color:var(--accent);margin-bottom:24px;opacity:.8}
+.hero-title{font-size:clamp(80px,15vw,180px);font-weight:900;letter-spacing:-.02em;line-height:.9;background:linear-gradient(135deg,var(--accent),var(--accent2),var(--accent3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-sub{margin-top:20px;font-size:clamp(16px,2vw,22px);font-weight:300;color:var(--muted);letter-spacing:.05em}
+.hero-sub em{color:var(--text);font-style:normal;font-weight:600}
+.scroll-hint{position:absolute;bottom:40px;left:50%;transform:translateX(-50%);z-index:2;display:flex;flex-direction:column;align-items:center;gap:8px;opacity:.5;animation:float 2s ease-in-out infinite}
+.scroll-hint span{font-size:12px;letter-spacing:.1em}
+.scroll-hint .arrow{width:1px;height:40px;background:linear-gradient(to bottom,var(--text),transparent)}
+@keyframes float{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(8px)}}
+
+/* SECTION */
+section{position:relative;padding:120px 40px;max-width:1200px;margin:0 auto}
+.section-label{font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:16px;font-weight:600}
+.section-title{font-size:clamp(36px,5vw,64px);font-weight:900;line-height:1.1;margin-bottom:40px}
+.section-desc{font-size:18px;line-height:1.8;color:var(--muted);max-width:680px;font-weight:300}
+
+/* DIMENSIONS */
+.dim-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;margin-top:60px}
+.dim-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:40px 20px;text-align:center;transition:all .4s cubic-bezier(.22,1,.36,1);position:relative;overflow:hidden}
+.dim-card::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% 0%,rgba(245,197,66,.08),transparent 70%);opacity:0;transition:opacity .4s}
+.dim-card:hover::before{opacity:1}
+.dim-card:hover{border-color:rgba(245,197,66,.2);transform:translateY(-4px)}
+.dim-pair{display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:16px}
+.dim-letter{font-size:56px;font-weight:900;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1}
+.dim-vs{font-size:18px;color:var(--muted);font-weight:300}
+.dim-labels{display:flex;justify-content:center;gap:24px}
+.dim-labels span{font-size:14px;font-weight:700;letter-spacing:.05em;white-space:nowrap}
+.dim-desc-text{font-size:13px;color:var(--muted);margin-top:6px;line-height:1.6;white-space:nowrap}
+
+/* TYPE GROUPS */
+.groups{margin-top:60px}
+.group{margin-bottom:80px}
+.group-header{display:flex;align-items:center;gap:16px;margin-bottom:32px}
+.group-icon{font-size:40px}
+.group-name{font-size:28px;font-weight:900}
+.group-tag{font-size:13px;color:var(--muted);font-weight:300;letter-spacing:.05em}
+.types-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+.type-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:32px 16px;text-align:center;transition:all .3s;cursor:none}
+.type-card a{display:block;text-decoration:none;color:inherit;height:100%}
+.type-card:hover{border-color:rgba(255,255,255,.12);background:rgba(255,255,255,.05);transform:translateY(-4px)}
+.type-code{font-size:36px;font-weight:900;background:linear-gradient(135deg,var(--accent),var(--accent3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1}
+.type-emoji{font-size:32px;margin:12px 0 8px}
+.type-name{font-size:18px;font-weight:700;margin-bottom:10px}
+.type-text{font-size:13px;color:var(--muted);line-height:1.7;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-align:justify}
+
+/* COLOR VARIANTS FOR GROUPS */
+.group.analysts .type-card:hover{border-color:rgba(167,139,250,.3)}
+.group.analysts .type-code{background:linear-gradient(135deg,#a78bfa,#818cf8);-webkit-background-clip:text;background-clip:text}
+.group.diplomats .type-card:hover{border-color:rgba(74,222,128,.3)}
+.group.diplomats .type-code{background:linear-gradient(135deg,#4ade80,#34d399);-webkit-background-clip:text;background-clip:text}
+.group.sentinels .type-card:hover{border-color:rgba(96,165,250,.3)}
+.group.sentinels .type-code{background:linear-gradient(135deg,#60a5fa,#38bdf8);-webkit-background-clip:text;background-clip:text}
+.group.explorers .type-card:hover{border-color:rgba(251,146,60,.3)}
+.group.explorers .type-code{background:linear-gradient(135deg,#fb923c,#f59e0b);-webkit-background-clip:text;background-clip:text}
+
+/* QUOTE */
+.quote-section{text-align:center;padding:160px 40px;position:relative}
+.quote-section::before{content:'"';position:absolute;top:60px;left:50%;transform:translateX(-50%);font-size:200px;font-weight:900;opacity:.04;font-family:Georgia,serif}
+.quote-text{font-size:clamp(24px,4vw,44px);font-weight:300;line-height:1.5;max-width:800px;margin:0 auto}
+.quote-text strong{color:var(--accent);font-weight:700;font-style:normal}
+.quote-attr{margin-top:30px;font-size:14px;color:var(--muted);letter-spacing:.1em}
+
+/* NOTE */
+.individual-note{text-align:center;padding:100px 40px;max-width:800px;margin:0 auto}
+.note-icon{font-size:48px;margin-bottom:24px}
+.note-title{font-size:28px;font-weight:700;margin-bottom:16px}
+.note-text{font-size:16px;color:var(--muted);line-height:1.8;max-width:600px;margin:0 auto}
+
+/* FOOTER */
+footer{text-align:center;padding:60px 40px;font-size:13px;color:var(--muted);border-top:1px solid var(--border);max-width:1200px;margin:0 auto}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  .dim-grid,.types-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:768px){
+  .cursor-ring{display:none}
+  body{cursor:auto}
+  section{padding:80px 24px}
+}
+</style>
+</head>
+<body>
+
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+  <canvas class="hero-canvas" id="heroCanvas"></canvas>
+  <div class="hero-content">
+    <div class="hero-badge">MYERS-BRIGGS TYPE INDICATOR</div>
+    <h1 class="hero-title">MBTI</h1>
+    <p class="hero-sub"><em>16种人格</em> · 认识自己，理解他人</p>
+  </div>
+  <div class="scroll-hint">
+    <span>探索所有类型</span>
+    <div class="arrow"></div>
+  </div>
+</section>
+
+<!-- WHAT IS MBTI -->
+<section>
+  <div class="section-label">认识 MBTI</div>
+  <h2 class="section-title">四个维度<br>十六种可能</h2>
+  <p class="section-desc">
+    MBTI 基于荣格的心理类型理论，将人格分为四个维度。<span style="white-space:nowrap">每个维度的两极组合，产生 2⁴ = 16 种独特的人格类型</span>。<br>它不是标签，而是一面帮助你理解自己和他人的镜子。
+  </p>
+  <div class="dim-grid">
+    <div class="dim-card">
+      <div class="dim-pair"><span class="dim-letter">E</span><span class="dim-vs">vs</span><span class="dim-letter">I</span></div>
+      <div class="dim-labels"><span>外向 vs 内向</span></div>
+      <p class="dim-desc-text">能量来源：外部世界 vs 内心世界</p>
+    </div>
+    <div class="dim-card">
+      <div class="dim-pair"><span class="dim-letter">S</span><span class="dim-vs">vs</span><span class="dim-letter">N</span></div>
+      <div class="dim-labels"><span>实感 vs 直觉</span></div>
+      <p class="dim-desc-text">信息获取：具体事实 vs 抽象可能</p>
+    </div>
+    <div class="dim-card">
+      <div class="dim-pair"><span class="dim-letter">T</span><span class="dim-vs">vs</span><span class="dim-letter">F</span></div>
+      <div class="dim-labels"><span>思维 vs 情感</span></div>
+      <p class="dim-desc-text">决策方式：逻辑分析 vs 价值判断</p>
+    </div>
+    <div class="dim-card">
+      <div class="dim-pair"><span class="dim-letter">J</span><span class="dim-vs">vs</span><span class="dim-letter">P</span></div>
+      <div class="dim-labels"><span>判断 vs 感知</span></div>
+      <p class="dim-desc-text">生活方式：计划有序 vs 灵活开放</p>
+    </div>
+  </div>
+</section>
+
+<!-- 16 TYPES -->
+<section>
+  <div class="section-label">人格图鉴</div>
+  <h2 class="section-title">你是哪一种？</h2>
+  <p class="section-desc">16 种人格类型分为四大类：分析家、外交家、守护者、探险家。<br><span style="white-space:nowrap">每种类型都有独特的认知方式和行为模式</span>。</p>
+
+  <div class="groups">
+
+    <!-- ANALYSTS -->
+    <div class="group analysts">
+      <div class="group-header">
+        <span class="group-icon">🧠</span>
+        <div><div class="group-name">分析家</div><div class="group-tag">INT / NT · 理性与战略</div></div>
+      </div>
+      <div class="types-grid">
+        <div class="type-card">
+          <a href="types/intj.html">
+          <div class="type-code">INTJ</div>
+          <div class="type-emoji">♟️</div>
+          <div class="type-name">建筑师</div>
+          <div class="type-text">战略性思考者，善于将复杂构想转化为可执行蓝图。独立、高效、追求卓越。</div>
+                  </a>
+        </div>
+        <div class="type-card">
+          <a href="types/intp.html">
+          <div class="type-code">INTP</div>
+          <div class="type-emoji">🧩</div>
+          <div class="type-name">逻辑学家</div>
+          <div class="type-text">热爱探索理论与原理，大脑永远在分析。安静外表下藏着汹涌的思维风暴。</div>
+                  </a>
+        </div>
+        <div class="type-card">
+          <a href="types/entj.html">
+          <div class="type-code">ENTJ</div>
+          <div class="type-emoji">🦅</div>
+          <div class="type-name">指挥官</div>
+          <div class="type-text">天生的领导者，目标明确、执行力惊人。善于组织资源，推动目标达成。</div>
+                  </a>
+        </div>
+        <div class="type-card">
+          <a href="types/entp.html">
+          <div class="type-code">ENTP</div>
+          <div class="type-emoji">🎭</div>
+          <div class="type-name">辩论家</div>
+          <div class="type-text">思维敏捷、口才出众，热爱挑战传统观念。创新是本能，争论是乐趣。</div>
+                  </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- DIPLOMATS -->
+    <div class="group diplomats">
+      <div class="group-header">
+        <span class="group-icon">🕊️</span>
+        <div><div class="group-name">外交家</div><div class="group-tag">INF / NF · 直觉与理想</div></div>
+      </div>
+      <div class="types-grid">
+        <div class="type-card">
+          <a href="types/infj.html">
+          <div class="type-code">INFJ</div>
+          <div class="type-emoji">🔮</div>
+          <div class="type-name">提倡者</div>
+          <div class="type-text">安静而有力量，拥有强烈的理想主义。善于洞察人心，让世界变得更好。</div>
+                  </a>
+        </div>
+        <div class="type-card">
+          <a href="types/infp.html">
+          <div class="type-code">INFP</div>
+          <div class="type-emoji">🦋</div>
+          <div class="type-name">调停者</div>
+          <div class="type-text">内心住着诗意的灵魂，敏感、善良、忠于自己的价值观。安静的理想主义者。</div>
+                  </a>
+        </div>
+        <div class="type-card">
+          <a href="types/enfj.html">
+          <div class="type-code">ENFJ</div>
+          <div class="type-emoji">🌞</div>
+          <div class="type-name">主人公</div>
+          <div class="type-text">魅力四射的引导者，善于激励他人。天生的共情能力让他们成为最好的导师。</div>
+                  </a>
+        </div>
+        <div class="type-card">
+          <a href="types/enfp.html">
+          <div class="type-code">ENFP</div>
+          <div class="type-emoji">🌈</div>
+          <div class="type-name">追梦者</div>
+          <div class="type-text">热情洋溢的自由灵魂，创意无限、感染力超强。在他们眼里处处都是可能性。</div>
+                  </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- SENTINELS -->
+    <div class="group sentinels">
+      <div class="group-header">
+        <span class="group-icon">⚓</span>
+        <div><div class="group-name">守护者</div><div class="group-tag">ISJ / ESJ · 实感与责任</div></div>
+      </div>
+      <div class="types-grid">
+        <div class="type-card">
+          <a href="types/istj.html">
+          <div class="type-code">ISTJ</div>
+          <div class="type-emoji">📐</div>
+          <div class="type-name">物流师</div>
+          <div class="type-text">务实可靠，注重细节和规则。说到做到，是团队中最值得信赖的人。</div>
+                  </a>
+        </div>
+        <div class="type-card">
+          <a href="types/isfj.html">
+          <div class="type-code">ISFJ</div>
+          <div class="type-emoji">🕯️</div>
+          <div class="type-name">守护者</div>
+          <div class="type-text">温暖而细心，默默守护身边的人。超强的责任感和记忆力让他们最贴心。</div>
+                  </a>
+        </div>
+        <div class="type-card">
+          <a href="types/estj.html">
+          <div class="type-code">ESTJ</div>
+          <div class="type-emoji">🏛️</div>
+          <div class="type-name">总经理</div>
+          <div class="type-text">组织能力强，处事果断。天生的管理者，善于建立秩序和推动执行。</div>
+                  </a>
+        </div>
+        <div class="type-card">
+          <a href="types/esfj.html">
+          <div class="type-code">ESFJ</div>
+          <div class="type-emoji">🫶</div>
+          <div class="type-name">执政官</div>
+          <div class="type-text">社交达人，热心助人。善于营造和谐氛围，是最受欢迎的聚会组织者。</div>
+                  </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- EXPLORERS -->
+    <div class="group explorers">
+      <div class="group-header">
+        <span class="group-icon">🗺️</span>
+        <div><div class="group-name">探险家</div><div class="group-tag">ISP / ESP · 感知与行动</div></div>
+      </div>
+      <div class="types-grid">
+        <div class="type-card">
+          <a href="types/istp.html">
+          <div class="type-code">ISTP</div>
+          <div class="type-emoji">⚙️</div>
+          <div class="type-name">鉴赏家</div>
+          <div class="type-text">冷静的实践者，善于拆解和理解事物运作的原理。动手能力强，临危不乱。</div>
+                  </a>
+        </div>
+        <div class="type-card">
+          <a href="types/isfp.html">
+          <div class="type-code">ISFP</div>
+          <div class="type-emoji">🍃</div>
+          <div class="type-name">探险家</div>
+          <div class="type-text">安静的艺术灵魂，用行动而非语言表达自我。享受当下，活在感官的世界里。</div>
+                  </a>
+        </div>
+        <div class="type-card">
+          <a href="types/estp.html">
+          <div class="type-code">ESTP</div>
+          <div class="type-emoji">⚡</div>
+          <div class="type-name">企业家</div>
+          <div class="type-text">行动派、冒险家、问题解决者。反应迅速，善于在混乱中抓住机会。</div>
+                  </a>
+        </div>
+        <div class="type-card">
+          <a href="types/esfp.html">
+          <div class="type-code">ESFP</div>
+          <div class="type-emoji">✨</div>
+          <div class="type-name">表演者</div>
+          <div class="type-text">天生的表演者，热情、有趣、自带聚光灯。他们的存在本身就是一种快乐。</div>
+                  </a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- QUOTE -->
+<section class="quote-section">
+  <p class="quote-text">
+    世界上没有<strong>错误</strong>的人格，<br>
+    只有<strong>不同</strong>的看世界的方式。
+  </p>
+  <p class="quote-attr">— 致每一种独特的你</p>
+</section>
+
+<!-- NOTE -->
+<section class="individual-note">
+  <div class="note-icon">🪞</div>
+  <h3 class="note-title">MBTI 是镜子，不是牢笼</h3>
+  <p class="note-text">
+    每个人都是独一无二的。你的类型描述的是一种<strong>倾向</strong>，而不是<strong>命运</strong>。<br><br>
+    你可能同时拥有 E 和 I 的特质，你的 T 和 F 会随场景切换，你的 J 和 P <span style="white-space:nowrap">可能只差 3%</span>。<br><br>
+    <span style="color:var(--accent)">了解 MBTI 的目的，是理解而非定义。</span>
+  </p>
+</section>
+
+<footer>
+  <p>✨ 为所有独一无二的灵魂而作 · Built with ♥</p>
+  <p style="margin-top:8px;opacity:.5">MBTI® is a trademark of The Myers-Briggs Company</p>
+</footer>
+
+<script>
+// CURSOR
+const cursorRing=document.getElementById('cursorRing');
+const hero=document.getElementById('hero');
+let mouseX=0,mouseY=0,ringX=0,ringY=0;
+document.addEventListener('mousemove',e=>{mouseX=e.clientX;mouseY=e.clientY});
+function animateCursor(){ringX+=(mouseX-ringX)*.15;ringY+=(mouseY-ringY)*.15;cursorRing.style.left=ringX+'px';cursorRing.style.top=ringY+'px';requestAnimationFrame(animateCursor)}
+animateCursor();
+const heroRect=()=>hero.getBoundingClientRect();
+document.addEventListener('mousemove',e=>{const r=heroRect();if(e.clientY>=r.top&&e.clientY<=r.bottom){cursorRing.classList.add('hero-mode')}else{cursorRing.classList.remove('hero-mode')}});
+
+// CANVAS
+const canvas=document.getElementById('heroCanvas');
+const ctx=canvas.getContext('2d');
+function resize(){canvas.width=window.innerWidth;canvas.height=window.innerHeight}
+resize();window.addEventListener('resize',resize);
+const chars='MBTIENFSPJ调停者建筑师逻辑学家指挥官辩论家提倡者主人公竞选者物流师守护者总经理执政官鉴赏家探险家企业家表演者✦★'.split('');
+const fontSize=14;
+let columns=Math.floor(canvas.width/fontSize);
+let drops=Array(columns).fill(1);
+function drawCanvas(){
+  ctx.fillStyle='rgba(10,10,15,.06)';
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle='rgba(245,197,66,.12)';
+  ctx.font=fontSize+'px "Noto Sans SC",monospace';
+  for(let i=0;i<drops.length;i++){
+    const text=chars[Math.floor(Math.random()*chars.length)];
+    ctx.fillText(text,i*fontSize,drops[i]*fontSize);
+    if(drops[i]*fontSize>canvas.height&&Math.random()>.975)drops[i]=0;
+    drops[i]++;
+  }
+  requestAnimationFrame(drawCanvas);
+}
+drawCanvas();
+window.addEventListener('resize',()=>{columns=Math.floor(canvas.width/fontSize);drops=Array(columns).fill(1)});
+
+// SCROLL REVEAL
+const observer=new IntersectionObserver(entries=>{
+  entries.forEach(entry=>{if(entry.isIntersecting){entry.target.style.opacity='1';entry.target.style.transform='translateY(0)'}});
+},{threshold:.1});
+document.querySelectorAll('section:not(.hero)').forEach(section=>{
+  section.style.opacity='0';section.style.transform='translateY(40px)';
+  section.style.transition='opacity .8s cubic-bezier(.22,1,.36,1),transform .8s cubic-bezier(.22,1,.36,1)';
+  observer.observe(section);
+});
+</script>
+</body>
+</html>

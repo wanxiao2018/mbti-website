@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESFP — 表演者</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800;900&family=Noto+Sans+SC:wght@300;400;700;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0a0a0f;
+    --text: #f0ece4;
+    --accent: #f59e0b;
+    --accent2: #f472b6;
+    --accent3: #a78bfa;
+    --muted: #6b6b7b;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Noto Sans SC', 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    cursor: none;
+    overflow-x: hidden;
+  }
+
+  /* ========== CUSTOM CURSOR ========== */
+  .cursor-ring {
+    position: fixed;
+    top: 0; left: 0;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 99999;
+    mix-blend-mode: difference;
+    background: var(--text);
+    transform: translate(-50%, -50%);
+    transition: width 0.3s cubic-bezier(0.22,1,0.36,1),
+                height 0.3s cubic-bezier(0.22,1,0.36,1);
+  }
+  .cursor-ring.hero-mode {
+    width: 100px; height: 100px;
+  }
+
+  /* ========== HERO SECTION ========== */
+  .hero {
+    position: relative;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    max-width: 100%;
+    padding: 0;
+  }
+
+  .hero-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%; height: 100%;
+    z-index: 0;
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    pointer-events: none;
+  }
+
+  .hero-badge {
+    display: inline-block;
+    padding: 6px 18px;
+    border: 1px solid rgba(245,158,11,0.4);
+    border-radius: 999px;
+    font-size: 13px;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+    margin-bottom: 24px;
+    opacity: 0.8;
+  }
+
+  .hero-title {
+    font-size: clamp(80px, 15vw, 180px);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    line-height: 0.9;
+    background: linear-gradient(135deg, var(--accent), var(--accent2), var(--accent3));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero-sub {
+    margin-top: 20px;
+    font-size: clamp(16px, 2vw, 22px);
+    font-weight: 300;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+  }
+
+  .hero-sub em {
+    color: var(--text);
+    font-style: normal;
+    font-weight: 600;
+  }
+
+  .scroll-hint {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    opacity: 0.5;
+    animation: float 2s ease-in-out infinite;
+  }
+  .scroll-hint span { font-size: 12px; letter-spacing: 0.1em; }
+  .scroll-hint .arrow {
+    width: 1px; height: 40px;
+    background: linear-gradient(to bottom, var(--text), transparent);
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(8px); }
+  }
+
+  /* ========== SECTION COMMON ========== */
+  section {
+    position: relative;
+    padding: 120px 40px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .section-label {
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+    font-weight: 600;
+  }
+
+  .section-title {
+    font-size: clamp(36px, 5vw, 64px);
+    font-weight: 900;
+    line-height: 1.1;
+    margin-bottom: 40px;
+  }
+
+  .section-desc {
+    font-size: 18px;
+    line-height: 1.8;
+    color: var(--muted);
+    max-width: 680px;
+    font-weight: 300;
+  }
+
+  /* ========== LETTERS SECTION ========== */
+  .letters {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    margin-top: 60px;
+  }
+
+  .letter-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 20px;
+    padding: 40px 28px;
+    text-align: center;
+    transition: all 0.4s cubic-bezier(0.22,1,0.36,1);
+    position: relative;
+    overflow: hidden;
+  }
+  .letter-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 0%, rgba(245,158,11,0.08), transparent 70%);
+    opacity: 0;
+    transition: opacity 0.4s;
+  }
+  .letter-card:hover::before { opacity: 1; }
+  .letter-card:hover {
+    border-color: rgba(245,158,11,0.2);
+    transform: translateY(-4px);
+  }
+
+  .letter-char {
+    font-size: 72px;
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+  }
+  .letter-label {
+    font-size: 14px;
+    font-weight: 700;
+    margin-top: 12px;
+    letter-spacing: 0.05em;
+  }
+  .letter-desc {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 8px;
+    line-height: 1.6;
+  }
+
+  /* ========== TRAITS SECTION ========== */
+  .traits-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    margin-top: 60px;
+  }
+
+  .trait-card {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 16px;
+    padding: 36px 28px;
+    transition: all 0.3s;
+  }
+  .trait-card:hover {
+    border-color: rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.04);
+  }
+
+  .trait-icon {
+    font-size: 32px;
+    margin-bottom: 16px;
+  }
+  .trait-name {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+  .trait-text {
+    font-size: 15px;
+    color: var(--muted);
+    line-height: 1.7;
+    text-align: justify;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* ========== QUOTE SECTION ========== */
+  .quote-section {
+    text-align: center;
+    padding: 160px 40px;
+    position: relative;
+  }
+  .quote-section::before {
+    content: '"';
+    position: absolute;
+    top: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 200px;
+    font-weight: 900;
+    opacity: 0.04;
+    font-family: Georgia, serif;
+  }
+  .quote-text {
+    font-size: clamp(24px, 4vw, 44px);
+    font-weight: 300;
+    line-height: 1.5;
+    max-width: 800px;
+    margin: 0 auto;
+    
+  }
+  .quote-text strong {
+    color: var(--accent);
+    font-weight: 700;
+    font-style: normal;
+  }
+  .quote-attr {
+    margin-top: 30px;
+    font-size: 14px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+  }
+
+  /* ========== STRENGTHS & GROWTH ========== */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    margin-top: 60px;
+  }
+
+  .col-title {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .col-title .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .dot.green { background: #4ade80; }
+  .dot.purple { background: var(--accent); }
+
+  .list-item {
+    padding: 16px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    font-size: 16px;
+    line-height: 1.6;
+    color: rgba(240,236,228,0.8);
+  }
+  .list-item:last-child { border-bottom: none; }
+
+  /* ========== INDIVIDUAL NOTE ========== */
+  .individual-note {
+    text-align: center;
+    padding: 100px 40px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  .note-icon {
+    font-size: 48px;
+    margin-bottom: 24px;
+  }
+  .note-title {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 16px;
+  }
+  .note-text {
+    font-size: 16px;
+    color: var(--muted);
+    line-height: 1.8;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  /* ========== FOOTER ========== */
+  footer {
+    text-align: center;
+    padding: 60px 40px;
+    font-size: 13px;
+    color: var(--muted);
+    border-top: 1px solid rgba(255,255,255,0.05);
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  footer a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  /* ========== RESPONSIVE ========== */
+  @media (max-width: 768px) {
+    .letters { grid-template-columns: repeat(2, 1fr); }
+    .two-col { grid-template-columns: 1fr; gap: 40px; }
+    .cursor-ring { display: none; }
+    body { cursor: auto; }
+    section { padding: 80px 24px; }
+  }
+
+  /* ========== BACK LINK ========== */
+  .back-link {
+    position: fixed;
+    top: 24px;
+    left: 24px;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 999px;
+    color: var(--text);
+    font-size: 13px;
+    text-decoration: none;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s;
+  }
+  .back-link:hover {
+    background: rgba(255,255,255,0.12);
+    border-color: rgba(255,255,255,0.2);
+  }
+</style>
+</head>
+<body>
+
+<a href="../index.html" class="back-link">← 返回 MBTI</a>
+
+
+<!-- Custom Cursor -->
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- Hero -->
+<section class="hero" id="hero">
+  <canvas class="hero-canvas" id="heroCanvas"></canvas>
+  <div class="hero-content">
+    <div class="hero-badge">MYERS-BRIGGS TYPE INDICATOR</div>
+    <h1 class="hero-title">ESFP</h1>
+    <p class="hero-sub"><em>表演者</em> · 天生自带聚光灯的快乐源泉</p>
+  </div>
+  <div class="scroll-hint">
+    <span>探索更多</span>
+    <div class="arrow"></div>
+  </div>
+</section>
+
+<!-- What is ESFP -->
+<section>
+  <div class="section-label">人格解码</div>
+  <h2 class="section-title">解码 ESFP</h2>
+  <p class="section-desc">
+    ESFP 代表外向 (E)、实感 (S)、情感 (F)、感知 (P)。<br>热情感染身边的人，感官享受每个当下，真心对待每一刻时光，自由拥抱整段生活。
+  </p>
+
+  <div class="letters">
+    <div class="letter-card">
+      <div class="letter-char">E</div>
+      <div class="letter-label">外向</div>
+      <div class="letter-desc">天生舞台中心人物<br>在人群中闪闪发光</div>
+    </div>
+    <div class="letter-card">
+      <div class="letter-char">S</div>
+      <div class="letter-label">实感</div>
+      <div class="letter-desc">享受每个感官体验<br>活在当下每分每秒</div>
+    </div>
+    <div class="letter-card">
+      <div class="letter-char">F</div>
+      <div class="letter-label">情感</div>
+      <div class="letter-desc">真心对待每个人<br>快乐是最好的礼</div>
+    </div>
+    <div class="letter-card">
+      <div class="letter-char">P</div>
+      <div class="letter-label">感知</div>
+      <div class="letter-desc">自由自在无拘束<br>讨厌被规则束缚</div>
+    </div>
+  </div>
+</section>
+
+<!-- Quote -->
+<section class="quote-section">
+  <p class="quote-text">
+    <strong>人生只有一次</strong>，<br>
+    为什么不把它过得<strong>精彩</strong>？
+  </p>
+  <p class="quote-attr">— 每一个 ESFP 内心的声音</p>
+</section>
+
+<!-- Traits -->
+<section>
+  <div class="section-label">核心特质</div>
+  <h2 class="section-title">他们用快乐<br>点亮世界 ✨</h2>
+
+  <div class="traits-grid">
+    <div class="trait-card">
+      <div class="trait-icon">✨</div>
+      <div class="trait-name">聚光灯</div>
+      <div class="trait-text">ESFP 不需要舞台，他们走到哪里，哪里就是舞台。他们的存在本身就是一种表演，让人忍不住被吸引，这是与生俱来的光芒。</div>
+    </div>
+    <div class="trait-card">
+      <div class="trait-icon">🎉</div>
+      <div class="trait-name">快乐传播者</div>
+      <div class="trait-text">ESFP 的快乐是高传染性的，他们笑的时候整条街都会跟着笑。他们有能力让最沉闷的场合变得有趣，快乐是他们的天赋。</div>
+    </div>
+    <div class="trait-card">
+      <div class="trait-icon">🌈</div>
+      <div class="trait-name">当下拥抱者</div>
+      <div class="trait-text">ESFP 不活在过去的遗憾里，也不活在未来的焦虑中。他们百分之百地投入此刻、享受每一秒，这种纯粹是大多数人羡慕的能力。</div>
+    </div>
+    <div class="trait-card">
+      <div class="trait-icon">💃</div>
+      <div class="trait-name">感官盛宴</div>
+      <div class="trait-text">对 ESFP 来说，生活就是一场感官的自助餐。美食、音乐、舞蹈、旅行，他们要把所有美好的体验都尝一遍，绝不浪费这一生。</div>
+    </div>
+    <div class="trait-card">
+      <div class="trait-icon">🎁</div>
+      <div class="trait-name">慷慨之心</div>
+      <div class="trait-text">ESFP 的快乐哲学是"好东西要分享"，他们会把自己的好心情、好运气、好发现毫不吝啬地分给每一个人。慷慨是快乐的放大器。</div>
+    </div>
+    <div class="trait-card">
+      <div class="trait-icon">🦜</div>
+      <div class="trait-name">生活艺术家</div>
+      <div class="trait-text">ESFP 不一定在台上表演，但他们的生活方式本身就是一场精彩的演出。他们用热情把平凡的日子过成了传奇，生活即舞台。</div>
+    </div>
+  </div>
+</section>
+
+<!-- Strengths & Growth -->
+<section>
+  <div class="section-label">光与影</div>
+  <h2 class="section-title">每束光芒都有<br>需要充电的时候</h2>
+  <p class="section-desc" style="margin-bottom: 0; white-space: nowrap;">
+    ESFP 的热情和回避严肃，是同一种快乐的两种选择。面对问题不代表失去快乐。
+  </p>
+
+  <div class="two-col">
+    <div>
+      <div class="col-title"><span class="dot green"></span> 闪光点</div>
+      <div class="list-item">✦ 善于社交，人缘极好</div>
+      <div class="list-item">✦ 活在当下，享受生活</div>
+      <div class="list-item">✦ 慷慨大方，乐于分享</div>
+      <div class="list-item">✦ 灵活自在，适应力强</div>
+      <div class="list-item">✦ 热情洋溢，感染力强</div>
+    </div>
+    <div>
+      <div class="col-title"><span class="dot purple"></span> 成长区</div>
+      <div class="list-item">△ 对批评过于敏感</div>
+      <div class="list-item">△ 有时过于追求刺激</div>
+      <div class="list-item">△ 容易回避严肃问题</div>
+      <div class="list-item">△ 对长期规划缺乏耐心</div>
+      <div class="list-item">△ 难以坚持枯燥的任务</div>    </div>
+  </div>
+</section>
+
+<!-- Individual Note -->
+<section class="individual-note">
+  <div class="note-icon">✨</div>
+  <h3 class="note-title">给 ESFP 的你</h3>
+  <p class="note-text">
+    你的快乐不是肤浅，而是你选择用最好的方式度过这一生。<br><br>    你不需要变得"更严肃"来被认真对待。<br>    你的热闹不是空虚，而是你在用自己的方式感受生命。<br>    你的热情不是三分钟热度，而是你对生活永不停歇的热爱。<br><br>    那些说你"太闹"的人，<br>    只是不知道怎么像你一样享受生活。<br><br>    <span style="color: var(--accent);">你不需要为自己的快乐道歉。做你自己，这个世界需要你这样的光。</span>
+  </p>
+</section>
+
+<footer>
+  <p>✨ 为所有快乐源泉的灵魂而作 · Built with ♥</p>
+  <p style="margin-top: 8px; opacity: 0.5;">MBTI® is a trademark of The Myers-Briggs Company</p>
+</footer>
+
+<script>
+// ========== CURSOR ==========
+const cursorRing = document.getElementById('cursorRing');
+const hero = document.getElementById('hero');
+let mouseX = 0, mouseY = 0, ringX = 0, ringY = 0;
+
+document.addEventListener('mousemove', (e) => {
+  mouseX = e.clientX;
+  mouseY = e.clientY;
+});
+
+function animateCursor() {
+  ringX += (mouseX - ringX) * 0.15;
+  ringY += (mouseY - ringY) * 0.15;
+  cursorRing.style.left = ringX + 'px';
+  cursorRing.style.top = ringY + 'px';
+  requestAnimationFrame(animateCursor);
+}
+animateCursor();
+
+const heroRect = () => hero.getBoundingClientRect();
+document.addEventListener('mousemove', (e) => {
+  const r = heroRect();
+  if (e.clientY >= r.top && e.clientY <= r.bottom) {
+    cursorRing.classList.add('hero-mode');
+  } else {
+    cursorRing.classList.remove('hero-mode');
+  }
+});
+
+// ========== CANVAS BACKGROUND ==========
+const canvas = document.getElementById('heroCanvas');
+const ctx = canvas.getContext('2d');
+
+function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+const chars = 'ESFP表演者快乐光芒'.split('');
+const fontSize = 14;
+let columns = Math.floor(canvas.width / fontSize);
+let drops = Array(columns).fill(1);
+
+function drawCanvas() {
+  ctx.fillStyle = 'rgba(10, 10, 15, 0.06)';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  ctx.fillStyle = 'rgba(245, 158, 11, 0.12)';
+  ctx.font = fontSize + 'px "Noto Sans SC", monospace';
+
+  for (let i = 0; i < drops.length; i++) {
+    const text = chars[Math.floor(Math.random() * chars.length)];
+    ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+    if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+      drops[i] = 0;
+    }
+    drops[i]++;
+  }
+  requestAnimationFrame(drawCanvas);
+}
+drawCanvas();
+
+window.addEventListener('resize', () => {
+  columns = Math.floor(canvas.width / fontSize);
+  drops = Array(columns).fill(1);
+});
+
+// ========== SCROLL REVEAL ==========
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.style.opacity = '1';
+      entry.target.style.transform = 'translateY(0)';
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('section:not(.hero)').forEach(section => {
+  section.style.opacity = '0';
+  section.style.transform = 'translateY(40px)';
+  section.style.transition = 'opacity 0.8s cubic-bezier(0.22,1,0.36,1), transform 0.8s cubic-bezier(0.22,1,0.36,1)';
+  observer.observe(section);
+});
+</script>
+
+</body>
+</html>

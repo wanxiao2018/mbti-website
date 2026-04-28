@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ISTJ — 物流师</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800;900&family=Noto+Sans+SC:wght@300;400;700;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0a0a0f;
+    --text: #f0ece4;
+    --accent: #3b82f6;
+    --accent2: #f5c542;
+    --accent3: #22d3ee;
+    --muted: #6b6b7b;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Noto Sans SC', 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    cursor: none;
+    overflow-x: hidden;
+  }
+
+  /* ========== CUSTOM CURSOR ========== */
+  .cursor-ring {
+    position: fixed;
+    top: 0; left: 0;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 99999;
+    mix-blend-mode: difference;
+    background: var(--text);
+    transform: translate(-50%, -50%);
+    transition: width 0.3s cubic-bezier(0.22,1,0.36,1),
+                height 0.3s cubic-bezier(0.22,1,0.36,1);
+  }
+  .cursor-ring.hero-mode {
+    width: 100px; height: 100px;
+  }
+
+  /* ========== HERO SECTION ========== */
+  .hero {
+    position: relative;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    max-width: 100%;
+    padding: 0;
+  }
+
+  .hero-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%; height: 100%;
+    z-index: 0;
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    pointer-events: none;
+  }
+
+  .hero-badge {
+    display: inline-block;
+    padding: 6px 18px;
+    border: 1px solid rgba(59,130,246,0.4);
+    border-radius: 999px;
+    font-size: 13px;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+    margin-bottom: 24px;
+    opacity: 0.8;
+  }
+
+  .hero-title {
+    font-size: clamp(80px, 15vw, 180px);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    line-height: 0.9;
+    background: linear-gradient(135deg, var(--accent), var(--accent2), var(--accent3));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero-sub {
+    margin-top: 20px;
+    font-size: clamp(16px, 2vw, 22px);
+    font-weight: 300;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+  }
+
+  .hero-sub em {
+    color: var(--text);
+    font-style: normal;
+    font-weight: 600;
+  }
+
+  .scroll-hint {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    opacity: 0.5;
+    animation: float 2s ease-in-out infinite;
+  }
+  .scroll-hint span { font-size: 12px; letter-spacing: 0.1em; }
+  .scroll-hint .arrow {
+    width: 1px; height: 40px;
+    background: linear-gradient(to bottom, var(--text), transparent);
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(8px); }
+  }
+
+  /* ========== SECTION COMMON ========== */
+  section {
+    position: relative;
+    padding: 120px 40px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .section-label {
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+    font-weight: 600;
+  }
+
+  .section-title {
+    font-size: clamp(36px, 5vw, 64px);
+    font-weight: 900;
+    line-height: 1.1;
+    margin-bottom: 40px;
+  }
+
+  .section-desc {
+    font-size: 18px;
+    line-height: 1.8;
+    color: var(--muted);
+    max-width: 680px;
+    font-weight: 300;
+  }
+
+  /* ========== LETTERS SECTION ========== */
+  .letters {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    margin-top: 60px;
+  }
+
+  .letter-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 20px;
+    padding: 40px 28px;
+    text-align: center;
+    transition: all 0.4s cubic-bezier(0.22,1,0.36,1);
+    position: relative;
+    overflow: hidden;
+  }
+  .letter-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 0%, rgba(59,130,246,0.08), transparent 70%);
+    opacity: 0;
+    transition: opacity 0.4s;
+  }
+  .letter-card:hover::before { opacity: 1; }
+  .letter-card:hover {
+    border-color: rgba(59,130,246,0.2);
+    transform: translateY(-4px);
+  }
+
+  .letter-char {
+    font-size: 72px;
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+  }
+  .letter-label {
+    font-size: 14px;
+    font-weight: 700;
+    margin-top: 12px;
+    letter-spacing: 0.05em;
+  }
+  .letter-desc {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 8px;
+    line-height: 1.6;
+  }
+
+  /* ========== TRAITS SECTION ========== */
+  .traits-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    margin-top: 60px;
+  }
+
+  .trait-card {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 16px;
+    padding: 36px 28px;
+    transition: all 0.3s;
+  }
+  .trait-card:hover {
+    border-color: rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.04);
+  }
+
+  .trait-icon {
+    font-size: 32px;
+    margin-bottom: 16px;
+  }
+  .trait-name {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+  .trait-text {
+    font-size: 15px;
+    color: var(--muted);
+    line-height: 1.7;
+    text-align: justify;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* ========== QUOTE SECTION ========== */
+  .quote-section {
+    text-align: center;
+    padding: 160px 40px;
+    position: relative;
+  }
+  .quote-section::before {
+    content: '"';
+    position: absolute;
+    top: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 200px;
+    font-weight: 900;
+    opacity: 0.04;
+    font-family: Georgia, serif;
+  }
+  .quote-text {
+    font-size: clamp(24px, 4vw, 44px);
+    font-weight: 300;
+    line-height: 1.5;
+    max-width: 800px;
+    margin: 0 auto;
+    
+  }
+  .quote-text strong {
+    color: var(--accent);
+    font-weight: 700;
+    font-style: normal;
+  }
+  .quote-attr {
+    margin-top: 30px;
+    font-size: 14px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+  }
+
+  /* ========== STRENGTHS & GROWTH ========== */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    margin-top: 60px;
+  }
+
+  .col-title {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .col-title .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .dot.green { background: #4ade80; }
+  .dot.purple { background: var(--accent); }
+
+  .list-item {
+    padding: 16px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    font-size: 16px;
+    line-height: 1.6;
+    color: rgba(240,236,228,0.8);
+  }
+  .list-item:last-child { border-bottom: none; }
+
+  /* ========== INDIVIDUAL NOTE ========== */
+  .individual-note {
+    text-align: center;
+    padding: 100px 40px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  .note-icon {
+    font-size: 48px;
+    margin-bottom: 24px;
+  }
+  .note-title {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 16px;
+  }
+  .note-text {
+    font-size: 16px;
+    color: var(--muted);
+    line-height: 1.8;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  /* ========== FOOTER ========== */
+  footer {
+    text-align: center;
+    padding: 60px 40px;
+    font-size: 13px;
+    color: var(--muted);
+    border-top: 1px solid rgba(255,255,255,0.05);
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  footer a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  /* ========== RESPONSIVE ========== */
+  @media (max-width: 768px) {
+    .letters { grid-template-columns: repeat(2, 1fr); }
+    .two-col { grid-template-columns: 1fr; gap: 40px; }
+    .cursor-ring { display: none; }
+    body { cursor: auto; }
+    section { padding: 80px 24px; }
+  }
+
+  /* ========== BACK LINK ========== */
+  .back-link {
+    position: fixed;
+    top: 24px;
+    left: 24px;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 999px;
+    color: var(--text);
+    font-size: 13px;
+    text-decoration: none;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s;
+  }
+  .back-link:hover {
+    background: rgba(255,255,255,0.12);
+    border-color: rgba(255,255,255,0.2);
+  }
+</style>
+</head>
+<body>
+
+<a href="../index.html" class="back-link">← 返回 MBTI</a>
+
+
+<!-- Custom Cursor -->
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- Hero -->
+<section class="hero" id="hero">
+  <canvas class="hero-canvas" id="heroCanvas"></canvas>
+  <div class="hero-content">
+    <div class="hero-badge">MYERS-BRIGGS TYPE INDICATOR</div>
+    <h1 class="hero-title">ISTJ</h1>
+    <p class="hero-sub"><em>物流师</em> · 秩序与责任的忠实守护者</p>
+  </div>
+  <div class="scroll-hint">
+    <span>探索更多</span>
+    <div class="arrow"></div>
+  </div>
+</section>
+
+<!-- What is ISTJ -->
+<section>
+  <div class="section-label">人格解码</div>
+  <h2 class="section-title">解码 ISTJ</h2>
+  <p class="section-desc">
+    ISTJ 代表内向 (I)、实感 (S)、思维 (T)、判断 (J)。<br>专注守护每个细节，事实构建坚实根基，逻辑保障运转秩序，计划确保完美执行。
+  </p>
+
+  <div class="letters">
+    <div class="letter-card">
+      <div class="letter-char">I</div>
+      <div class="letter-label">内向</div>
+      <div class="letter-desc">沉稳专注有力量<br>在安静中展现可</div>
+    </div>
+    <div class="letter-card">
+      <div class="letter-char">S</div>
+      <div class="letter-label">实感</div>
+      <div class="letter-desc">关注事实微小细节<br>脚踏实地一步一印</div>
+    </div>
+    <div class="letter-card">
+      <div class="letter-char">T</div>
+      <div class="letter-label">思维</div>
+      <div class="letter-desc">理性决策追求公平<br>效率是不变的信仰</div>
+    </div>
+    <div class="letter-card">
+      <div class="letter-char">J</div>
+      <div class="letter-label">判断</div>
+      <div class="letter-desc">周密计划说到做到<br>秩序让一切运转正</div>
+    </div>
+  </div>
+</section>
+
+<!-- Quote -->
+<section class="quote-section">
+  <p class="quote-text">
+    世界上<strong>最可靠的力量</strong>，<br>
+    是日复一日的<strong>坚持</strong>。
+  </p>
+  <p class="quote-attr">— 每一个 ISTJ 内心的信念</p>
+</section>
+
+<!-- Traits -->
+<section>
+  <div class="section-label">核心特质</div>
+  <h2 class="section-title">他们用坚守<br>铸就可靠 ✨</h2>
+
+  <div class="traits-grid">
+    <div class="trait-card">
+      <div class="trait-icon">📐</div>
+      <div class="trait-name">秩序守护者</div>
+      <div class="trait-text">ISTJ 相信规则是让世界正常运转的基石。他们不是死板，而是在用最可靠的方式确保一切井然有序。</div>
+    </div>
+    <div class="trait-card">
+      <div class="trait-icon">🗂️</div>
+      <div class="trait-name">细节大师</div>
+      <div class="trait-text">别人忽视的小错误，ISTJ 都看在眼里。他们的严谨不是挑剔，而是对质量的尊重。</div>
+    </div>
+    <div class="trait-card">
+      <div class="trait-icon">⚓</div>
+      <div class="trait-name">可靠之锚</div>
+      <div class="trait-text">ISTJ 说"我会做到"就一定会做到。他们的承诺比合同还可靠，是团队中最值得信赖的存在。</div>
+    </div>
+    <div class="trait-card">
+      <div class="trait-icon">🏛️</div>
+      <div class="trait-name">传统守护者</div>
+      <div class="trait-text">ISTJ 尊重经过时间检验的方法。他们知道，有些东西之所以存在了这么久，是因为它确实有效。</div>
+    </div>
+    <div class="trait-card">
+      <div class="trait-icon">📋</div>
+      <div class="trait-name">执行专家</div>
+      <div class="trait-text">给 ISTJ 一个计划，他们会像精密仪器一样完美执行。不拖延、不打折扣、不找借口。</div>
+    </div>
+    <div class="trait-card">
+      <div class="trait-icon">🔒</div>
+      <div class="trait-name">忠诚之人</div>
+      <div class="trait-text">ISTJ 的忠诚不是嘴上说说。一旦他们认定你，就会在你最需要的时候默默站在你身后。</div>
+    </div>
+  </div>
+</section>
+
+<!-- Strengths & Growth -->
+<section>
+  <div class="section-label">光与影</div>
+    <h2 class="section-title">每份坚守都有<br>需要松手的时候</h2>
+  <p class="section-desc" style="margin-bottom: 0; white-space: nowrap;">
+    ISTJ 的严谨和固执，是同一份责任心的两种表达。偶尔灵活一下，世界不会崩塌。
+  </p>
+
+  <div class="two-col">
+    <div>
+      <div class="col-title"><span class="dot green"></span> 闪光点</div>
+      <div class="list-item">✦ 诚实正直，言行一致</div>
+      <div class="list-item">✦ 注重细节，严谨可靠</div>
+      <div class="list-item">✦ 忠诚稳定，值得信赖</div>
+      <div class="list-item">✦ 善于制定和遵守计划</div>
+      <div class="list-item">✦ 极强的责任感和执行力</div>
+    </div>
+    <div>
+      <div class="col-title"><span class="dot purple"></span> 成长区</div>
+      <div class="list-item">△ 有时过于固执</div>
+      <div class="list-item">△ 对变化的适应较慢</div>
+      <div class="list-item">△ 可能忽视他人情感</div>
+      <div class="list-item">△ 不善表达内心感受</div>
+      <div class="list-item">△ 标准过高容易苛责</div>
+    </div>
+  </div>
+</section>
+
+<!-- Individual Note -->
+<section class="individual-note">
+  <div class="note-icon">✨</div>
+  <h3 class="note-title">给 ISTJ 的你</h3>
+  <p class="note-text">
+    你的"死板"不是缺点，而是你对承诺的尊重。<br><br>
+    你不需要变得"更灵活"来取悦别人。<br>
+    你的沉默不是冷漠，而是你用行动在表达。<br>
+    那些觉得你"太较真"的人，不知道正是你的严谨让世界正常运转。<br><br>
+    你不需要改变自己。<br><br>
+    <span style="color: var(--accent);">做你自己，这个世界需要你这样的基石。</span>
+  </p>
+</section>
+
+<footer>
+  <p>✨ 为所有默默坚守的灵魂而作 · Built with ♥</p>
+  <p style="margin-top: 8px; opacity: 0.5;">MBTI® is a trademark of The Myers-Briggs Company</p>
+</footer>
+
+<script>
+// ========== CURSOR ==========
+const cursorRing = document.getElementById('cursorRing');
+const hero = document.getElementById('hero');
+let mouseX = 0, mouseY = 0, ringX = 0, ringY = 0;
+
+document.addEventListener('mousemove', (e) => {
+  mouseX = e.clientX;
+  mouseY = e.clientY;
+});
+
+function animateCursor() {
+  ringX += (mouseX - ringX) * 0.15;
+  ringY += (mouseY - ringY) * 0.15;
+  cursorRing.style.left = ringX + 'px';
+  cursorRing.style.top = ringY + 'px';
+  requestAnimationFrame(animateCursor);
+}
+animateCursor();
+
+// Hero spotlight mode
+const heroRect = () => hero.getBoundingClientRect();
+document.addEventListener('mousemove', (e) => {
+  const r = heroRect();
+  if (e.clientY >= r.top && e.clientY <= r.bottom) {
+    cursorRing.classList.add('hero-mode');
+  } else {
+    cursorRing.classList.remove('hero-mode');
+  }
+});
+
+// ========== CANVAS BACKGROUND ==========
+const canvas = document.getElementById('heroCanvas');
+const ctx = canvas.getContext('2d');
+
+function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+// Characters to rain
+const chars = 'ISTJ物流师秩序可靠'.split('');
+const fontSize = 14;
+let columns = Math.floor(canvas.width / fontSize);
+let drops = Array(columns).fill(1);
+
+function drawCanvas() {
+  ctx.fillStyle = 'rgba(10, 10, 15, 0.06)';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  ctx.fillStyle = 'rgba(59, 130, 246, 0.12)';
+  ctx.font = fontSize + 'px "Noto Sans SC", monospace';
+
+  for (let i = 0; i < drops.length; i++) {
+    const text = chars[Math.floor(Math.random() * chars.length)];
+    ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+    if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+      drops[i] = 0;
+    }
+    drops[i]++;
+  }
+  requestAnimationFrame(drawCanvas);
+}
+drawCanvas();
+
+window.addEventListener('resize', () => {
+  columns = Math.floor(canvas.width / fontSize);
+  drops = Array(columns).fill(1);
+});
+
+// ========== SCROLL REVEAL ==========
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.style.opacity = '1';
+      entry.target.style.transform = 'translateY(0)';
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('section:not(.hero)').forEach(section => {
+  section.style.opacity = '0';
+  section.style.transform = 'translateY(40px)';
+  section.style.transition = 'opacity 0.8s cubic-bezier(0.22,1,0.36,1), transform 0.8s cubic-bezier(0.22,1,0.36,1)';
+  observer.observe(section);
+});
+</script>
+
+</body>
+</html>

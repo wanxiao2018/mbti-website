@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ENTP — 辩论家</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800;900&family=Noto+Sans+SC:wght@300;400;700;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0a0a0f;
+    --text: #f0ece4;
+    --accent: #f97316;
+    --accent2: #f5c542;
+    --accent3: #a78bfa;
+    --muted: #6b6b7b;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Noto Sans SC', 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    cursor: none;
+    overflow-x: hidden;
+  }
+
+  /* ========== CUSTOM CURSOR ========== */
+  .cursor-ring {
+    position: fixed;
+    top: 0; left: 0;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 99999;
+    mix-blend-mode: difference;
+    background: var(--text);
+    transform: translate(-50%, -50%);
+    transition: width 0.3s cubic-bezier(0.22,1,0.36,1),
+                height 0.3s cubic-bezier(0.22,1,0.36,1);
+  }
+  .cursor-ring.hero-mode {
+    width: 100px; height: 100px;
+  }
+
+  /* ========== HERO SECTION ========== */
+  .hero {
+    position: relative;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    max-width: 100%;
+    padding: 0;
+  }
+
+  .hero-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%; height: 100%;
+    z-index: 0;
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    pointer-events: none;
+  }
+
+  .hero-badge {
+    display: inline-block;
+    padding: 6px 18px;
+    border: 1px solid rgba(249,115,22,0.4);
+    border-radius: 999px;
+    font-size: 13px;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+    margin-bottom: 24px;
+    opacity: 0.8;
+  }
+
+  .hero-title {
+    font-size: clamp(80px, 15vw, 180px);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    line-height: 0.9;
+    background: linear-gradient(135deg, var(--accent), var(--accent2), var(--accent3));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero-sub {
+    margin-top: 20px;
+    font-size: clamp(16px, 2vw, 22px);
+    font-weight: 300;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+  }
+
+  .hero-sub em {
+    color: var(--text);
+    font-style: normal;
+    font-weight: 600;
+  }
+
+  .scroll-hint {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    opacity: 0.5;
+    animation: float 2s ease-in-out infinite;
+  }
+  .scroll-hint span { font-size: 12px; letter-spacing: 0.1em; }
+  .scroll-hint .arrow {
+    width: 1px; height: 40px;
+    background: linear-gradient(to bottom, var(--text), transparent);
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(8px); }
+  }
+
+  /* ========== SECTION COMMON ========== */
+  section {
+    position: relative;
+    padding: 120px 40px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .section-label {
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+    font-weight: 600;
+  }
+
+  .section-title {
+    font-size: clamp(36px, 5vw, 64px);
+    font-weight: 900;
+    line-height: 1.1;
+    margin-bottom: 40px;
+  }
+
+  .section-desc {
+    font-size: 18px;
+    line-height: 1.8;
+    color: var(--muted);
+    max-width: 680px;
+    font-weight: 300;
+  }
+
+  /* ========== LETTERS SECTION ========== */
+  .letters {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    margin-top: 60px;
+  }
+
+  .letter-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 20px;
+    padding: 40px 28px;
+    text-align: center;
+    transition: all 0.4s cubic-bezier(0.22,1,0.36,1);
+    position: relative;
+    overflow: hidden;
+  }
+  .letter-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 0%, rgba(249,115,22,0.08), transparent 70%);
+    opacity: 0;
+    transition: opacity 0.4s;
+  }
+  .letter-card:hover::before { opacity: 1; }
+  .letter-card:hover {
+    border-color: rgba(249,115,22,0.2);
+    transform: translateY(-4px);
+  }
+
+  .letter-char {
+    font-size: 72px;
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+  }
+  .letter-label {
+    font-size: 14px;
+    font-weight: 700;
+    margin-top: 12px;
+    letter-spacing: 0.05em;
+  }
+  .letter-desc {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 8px;
+    line-height: 1.6;
+  }
+
+  /* ========== TRAITS SECTION ========== */
+  .traits-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    margin-top: 60px;
+  }
+
+  .trait-card {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 16px;
+    padding: 36px 28px;
+    transition: all 0.3s;
+  }
+  .trait-card:hover {
+    border-color: rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.04);
+  }
+
+  .trait-icon {
+    font-size: 32px;
+    margin-bottom: 16px;
+  }
+  .trait-name {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+  .trait-text {
+    font-size: 15px;
+    color: var(--muted);
+    line-height: 1.7;
+    text-align: justify;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* ========== QUOTE SECTION ========== */
+  .quote-section {
+    text-align: center;
+    padding: 160px 40px;
+    position: relative;
+  }
+  .quote-section::before {
+    content: '"';
+    position: absolute;
+    top: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 200px;
+    font-weight: 900;
+    opacity: 0.04;
+    font-family: Georgia, serif;
+  }
+  .quote-text {
+    font-size: clamp(24px, 4vw, 44px);
+    font-weight: 300;
+    line-height: 1.5;
+    max-width: 800px;
+    margin: 0 auto;
+    
+  }
+  .quote-text strong {
+    color: var(--accent);
+    font-weight: 700;
+    font-style: normal;
+  }
+  .quote-attr {
+    margin-top: 30px;
+    font-size: 14px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+  }
+
+  /* ========== STRENGTHS & GROWTH ========== */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    margin-top: 60px;
+  }
+
+  .col-title {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .col-title .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .dot.green { background: #4ade80; }
+  .dot.purple { background: var(--accent); }
+
+  .list-item {
+    padding: 16px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    font-size: 16px;
+    line-height: 1.6;
+    color: rgba(240,236,228,0.8);
+  }
+  .list-item:last-child { border-bottom: none; }
+
+  /* ========== INDIVIDUAL NOTE ========== */
+  .individual-note {
+    text-align: center;
+    padding: 100px 40px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  .note-icon {
+    font-size: 48px;
+    margin-bottom: 24px;
+  }
+  .note-title {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 16px;
+  }
+  .note-text {
+    font-size: 16px;
+    color: var(--muted);
+    line-height: 1.8;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  /* ========== FOOTER ========== */
+  footer {
+    text-align: center;
+    padding: 60px 40px;
+    font-size: 13px;
+    color: var(--muted);
+    border-top: 1px solid rgba(255,255,255,0.05);
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  footer a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  /* ========== RESPONSIVE ========== */
+  @media (max-width: 768px) {
+    .letters { grid-template-columns: repeat(2, 1fr); }
+    .two-col { grid-template-columns: 1fr; gap: 40px; }
+    .cursor-ring { display: none; }
+    body { cursor: auto; }
+    section { padding: 80px 24px; }
+  }
+
+  /* ========== BACK LINK ========== */
+  .back-link {
+    position: fixed;
+    top: 24px;
+    left: 24px;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 999px;
+    color: var(--text);
+    font-size: 13px;
+    text-decoration: none;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s;
+  }
+  .back-link:hover {
+    background: rgba(255,255,255,0.12);
+    border-color: rgba(255,255,255,0.2);
+  }
+</style>
+</head>
+<body>
+
+<a href="../index.html" class="back-link">← 返回 MBTI</a>
+
+
+<!-- Custom Cursor -->
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- Hero -->
+<section class="hero" id="hero">
+  <canvas class="hero-canvas" id="heroCanvas"></canvas>
+  <div class="hero-content">
+    <div class="hero-badge">MYERS-BRIGGS TYPE INDICATOR</div>
+    <h1 class="hero-title">ENTP</h1>
+    <p class="hero-sub"><em>辩论家</em> · 挑战一切的创新先锋</p>
+  </div>
+  <div class="scroll-hint">
+    <span>探索更多</span>
+    <div class="arrow"></div>
+  </div>
+</section>
+
+<!-- What is ENTP -->
+<section>
+  <div class="section-label">人格解码</div>
+  <h2 class="section-title">解码 ENTP</h2>
+  <p class="section-desc">
+    ENTP 代表外向 (E)、直觉 (N)、思维 (T)、感知 (P)。<br>好奇心驱动挑战，创意打破常规，逻辑拆解论点，灵活拥抱一切变化。
+  </p>
+
+  <div class="letters">
+    <div class="letter-card">
+      <div class="letter-char">E</div>
+      <div class="letter-label">外向</div>
+      <div class="letter-desc">在辩论交流中放光芒<br>热爱思想碰撞的火花</div>
+    </div>
+    <div class="letter-card">
+      <div class="letter-char">N</div>
+      <div class="letter-label">直觉</div>
+      <div class="letter-desc">看到别人忽视的可能<br>连接不同领域的知识</div>
+    </div>
+    <div class="letter-card">
+      <div class="letter-char">T</div>
+      <div class="letter-label">思维</div>
+      <div class="letter-desc">逻辑是手中的锋利剑<br>享受拆解论点的乐趣</div>
+    </div>
+    <div class="letter-card">
+      <div class="letter-char">P</div>
+      <div class="letter-label">感知</div>
+      <div class="letter-desc">讨厌一成不变的生活<br>享受变化中的每一天</div>
+    </div>
+  </div>
+</section>
+
+<!-- Quote -->
+<section class="quote-section">
+  <p class="quote-text">
+    规则存在的意义，<br>
+    就是被<strong>有道理地打破</strong>。
+  </p>
+  <p class="quote-attr">— 每一个 ENTP 内心的声音</p>
+</section>
+
+<!-- Traits -->
+<section>
+  <div class="section-label">核心特质</div>
+  <h2 class="section-title">他们用思辨<br>颠覆世界 ✨</h2>
+
+  <div class="traits-grid">
+    <div class="trait-card">
+      <div class="trait-icon">🎭</div>
+      <div class="trait-name">辩论艺术家</div>
+      <div class="trait-text">ENTP 辩论不是为了赢，而是为了在思想碰撞中找到更接近真理的答案。每一次争论都是一场思维的即兴表演。</div>
+    </div>
+    <div class="trait-card">
+      <div class="trait-icon">⚡</div>
+      <div class="trait-name">创新引擎</div>
+      <div class="trait-text">"我们一直都是这么做的"是 ENTP 最讨厌的一句话。他们的大脑永远在问"为什么不试试别的方法"。</div>
+    </div>
+    <div class="trait-card">
+      <div class="trait-icon">🦊</div>
+      <div class="trait-name">机敏灵活</div>
+      <div class="trait-text">ENTP 的临场反应快到让人措手不及。别人还在思考上一个问题，他们已经跳到三个新想法了。</div>
+    </div>
+    <div class="trait-card">
+      <div class="trait-icon">🌐</div>
+      <div class="trait-name">跨界连接者</div>
+      <div class="trait-text">ENTP 能把看似毫不相关的领域连接起来，创造出让人惊叹的新视角。他们的大脑是一个跨学科的融合器。</div>
+    </div>
+    <div class="trait-card">
+      <div class="trait-icon">🔥</div>
+      <div class="trait-name">点燃者</div>
+      <div class="trait-text">不管是会议还是聚会，ENTP 总能抛出一个炸裂的观点，让所有人开始激烈讨论。他们是话题的发动机。</div>
+    </div>
+    <div class="trait-card">
+      <div class="trait-icon">🧠</div>
+      <div class="trait-name">概念大师</div>
+      <div class="trait-text">ENTP 擅长把复杂抽象的概念用简单直白的方式解释清楚。他们的思维既深邃又通透。</div>
+    </div>
+  </div>
+</section>
+
+<!-- Strengths & Growth -->
+<section>
+  <div class="section-label">光与影</div>
+    <h2 class="section-title">每场辩论都有<br>疲惫的时刻</h2>
+  <p class="section-desc" style="margin-bottom: 0; white-space: nowrap;">
+    ENTP 的创新和三分钟热度，是同一种好奇心的两种表达。学会聚焦，才能让才华落地。
+  </p>
+
+  <div class="two-col">
+    <div>
+      <div class="col-title"><span class="dot green"></span> 闪光点</div>
+      <div class="list-item">✦ 善于辩论和说服</div>
+      <div class="list-item">✦ 创新能力强，点子多</div>
+      <div class="list-item">✦ 思维敏捷，反应迅速</div>
+      <div class="list-item">✦ 适应力强，不怕变化</div>
+      <div class="list-item">✦ 幽默风趣，社交能力强</div>
+    </div>
+    <div>
+      <div class="col-title"><span class="dot purple"></span> 成长区</div>
+      <div class="list-item">△ 容易三分钟热度</div>
+      <div class="list-item">△ 可能忽视他人感受</div>
+      <div class="list-item">△ 有时为了辩论而辩论</div>
+      <div class="list-item">△ 计划性不足过于随性</div>
+      <div class="list-item">△ 对细节和执行缺乏耐心</div>
+    </div>
+  </div>
+</section>
+
+<!-- Individual Note -->
+<section class="individual-note">
+  <div class="note-icon">✨</div>
+  <h3 class="note-title">给 ENTP 的你</h3>
+  <p class="note-text">
+    你的"抬杠"不是找茬，而是你在用最真诚的方式寻找真理。<br><br>
+    你不需要安静下来。<br>
+    你的想法太多不是问题，而是你的大脑在以光速运转。<br>
+    你的创新不是捣乱，而是你拒绝让世界变得无聊。<br><br>
+    那些受不了你"太吵"的人，<br>
+    只是还没有习惯你带来的新视角。<br><br>
+    <span style="color: var(--accent);">你不需要收敛锋芒。做你自己，世界需要你这样的颠覆者。</span>
+  </p>
+</section>
+
+<footer>
+  <p>✨ 为所有挑战常规的灵魂而作 · Built with ♥</p>
+  <p style="margin-top: 8px; opacity: 0.5;">MBTI® is a trademark of The Myers-Briggs Company</p>
+</footer>
+
+<script>
+// ========== CURSOR ==========
+const cursorRing = document.getElementById('cursorRing');
+const hero = document.getElementById('hero');
+let mouseX = 0, mouseY = 0, ringX = 0, ringY = 0;
+
+document.addEventListener('mousemove', (e) => {
+  mouseX = e.clientX;
+  mouseY = e.clientY;
+});
+
+function animateCursor() {
+  ringX += (mouseX - ringX) * 0.15;
+  ringY += (mouseY - ringY) * 0.15;
+  cursorRing.style.left = ringX + 'px';
+  cursorRing.style.top = ringY + 'px';
+  requestAnimationFrame(animateCursor);
+}
+animateCursor();
+
+const heroRect = () => hero.getBoundingClientRect();
+document.addEventListener('mousemove', (e) => {
+  const r = heroRect();
+  if (e.clientY >= r.top && e.clientY <= r.bottom) {
+    cursorRing.classList.add('hero-mode');
+  } else {
+    cursorRing.classList.remove('hero-mode');
+  }
+});
+
+// ========== CANVAS BACKGROUND ==========
+const canvas = document.getElementById('heroCanvas');
+const ctx = canvas.getContext('2d');
+
+function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+const chars = 'ENTP辩论家挑战创新'.split('');
+const fontSize = 14;
+let columns = Math.floor(canvas.width / fontSize);
+let drops = Array(columns).fill(1);
+
+function drawCanvas() {
+  ctx.fillStyle = 'rgba(10, 10, 15, 0.06)';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  ctx.fillStyle = 'rgba(249, 115, 22, 0.12)';
+  ctx.font = fontSize + 'px "Noto Sans SC", monospace';
+
+  for (let i = 0; i < drops.length; i++) {
+    const text = chars[Math.floor(Math.random() * chars.length)];
+    ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+    if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+      drops[i] = 0;
+    }
+    drops[i]++;
+  }
+  requestAnimationFrame(drawCanvas);
+}
+drawCanvas();
+
+window.addEventListener('resize', () => {
+  columns = Math.floor(canvas.width / fontSize);
+  drops = Array(columns).fill(1);
+});
+
+// ========== SCROLL REVEAL ==========
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.style.opacity = '1';
+      entry.target.style.transform = 'translateY(0)';
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('section:not(.hero)').forEach(section => {
+  section.style.opacity = '0';
+  section.style.transform = 'translateY(40px)';
+  section.style.transition = 'opacity 0.8s cubic-bezier(0.22,1,0.36,1), transform 0.8s cubic-bezier(0.22,1,0.36,1)';
+  observer.observe(section);
+});
+</script>
+
+</body>
+</html>
